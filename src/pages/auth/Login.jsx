@@ -63,9 +63,9 @@ const Login = () => {
       <p className="mt-3 text-center text-sm">
         No account? <Link to="/register" className="text-blue-600">Register</Link>
       </p>
-      <p className="mt-2 text-xs text-gray-400 text-center">
+      {/* <p className="mt-2 text-xs text-gray-400 text-center">
         Demo: admin@test.com / seller@test.com / buyer@test.com (Password: password)
-      </p>
+      </p> */}
     </div>
   );
 };
