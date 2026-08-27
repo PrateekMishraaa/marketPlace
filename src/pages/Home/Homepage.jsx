@@ -1,6 +1,6 @@
 // src/pages/home/Homepage.jsx
 import React from 'react';
-import Hero from '../../components/home/Hero.jsx';
+import Hero from '../../components/Home/Hero.jsx';
 import Services from '../../components/Home/Services.jsx';
 import HowItWorks from '../../components/Home/HowItWorks.jsx';
 import Testimonials from '../../components/Home/Testimonials.jsx';
