@@ -6,12 +6,25 @@ import Navbar from './components/common/Navbar.jsx';
 import Footer from './components/common/Footer.jsx';
 import PrivateRoute from './components/common/PrivateRoute.jsx';
 
+// Homepage
+import Homepage from './pages/home/Homepage.jsx';
+
+// Solutions Pages
+import Advertisers from './pages/solutions/Advertisers.jsx';
+import Brands from './pages/solutions/Brands.jsx';
+import Agencies from './pages/solutions/Agencies.jsx';
+
+// Services Pages
+import DigitalPR from './pages/services/DigitalPR.jsx';
+import EmailMarketing from './pages/services/EmailMarketing.jsx';
+import SEO from './pages/services/SEO.jsx';
+import CRO from './pages/services/CRO.jsx';
+
 // Public Pages
-import Homepage from './pages/Home/Homepage.jsx';
-import Services from './pages/Home/Services.jsx';
 import Blog from './pages/Home/Blog.jsx';
 import FAQ from './pages/Home/FAQ.jsx';
 import Contact from './pages/Home/Contact.jsx';
+import PodCast from './pages/Home/Podcast.jsx';
 
 // Auth Pages
 import Login from './pages/auth/Login.jsx';
@@ -40,8 +53,21 @@ const App = () => {
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Homepage />} />
-          <Route path="/services" element={<Services />} />
+          
+          {/* Solutions */}
+          <Route path="/solutions/advertisers" element={<Advertisers />} />
+          <Route path="/solutions/brands" element={<Brands />} />
+          <Route path="/solutions/agencies" element={<Agencies />} />
+          
+          {/* Services */}
+          <Route path="/services/digital-pr" element={<DigitalPR />} />
+          <Route path="/services/email-marketing" element={<EmailMarketing />} />
+          <Route path="/services/seo" element={<SEO />} />
+          <Route path="/services/cro" element={<CRO />} />
+          
+          {/* Other Public Pages */}
           <Route path="/blog" element={<Blog />} />
+          <Route path="/podcasts" element={<PodCast />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<Login />} />
