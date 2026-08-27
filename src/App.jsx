@@ -10,7 +10,7 @@ import LoadingSpinner from './components/common/LoadingSpinner';
 // ==================== LAZY LOADED COMPONENTS ====================
 
 // Public Pages
-const Homepage = lazy(() => import('./pages/home/Homepage'));
+const Homepage = lazy(() => import('./pages/Home/Homepage'));
 const Services = lazy(() => import('./pages/Home/Services'));
 const Blog = lazy(() => import('./pages/Home/Blog'));
 const FAQ = lazy(() => import('./pages/Home/FAQ'));
