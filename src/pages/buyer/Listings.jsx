@@ -1,98 +1,160 @@
-// src/components/common/listings/ListingCard.jsx
+// src/pages/Listings.jsx
+import React, { useState, useEffect } from 'react';
+import ListingCard from '../../components/common/listings/ListingCard';
+import { apiService } from '../../api/axiosConfig';
+import toast from 'react-hot-toast';
 
-import React from 'react';
+const Listings = () => {
+  const [listings, setListings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [categories, setCategories] = useState(['all']);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    totalPages: 1,
+    total: 0,
+  });
 
-const ListingCard = ({ listing }) => {
-  // Safety check
-  if (!listing || typeof listing !== 'object') {
+  // ✅ Fetch listings from backend
+  const fetchListings = async (page = 1) => {
+    try {
+      setLoading(true);
+      const params = {
+        page,
+        limit: 12,
+      };
+      
+      if (searchTerm) params.search = searchTerm;
+      if (categoryFilter !== 'all') params.category = categoryFilter;
+      
+      const response = await apiService.listings.getAll(params);
+      
+      // ✅ Correctly access the nested data structure
+      const apiData = response.data;
+      
+      if (apiData.success) {
+        const listingsData = apiData.data.listings || [];
+        setListings(listingsData);
+        setPagination({
+          page: apiData.data.page || 1,
+          totalPages: apiData.data.totalPages || 1,
+          total: apiData.data.total || 0,
+        });
+        
+        // Extract categories from listings
+        if (listingsData.length > 0) {
+          const cats = ['all', ...new Set(listingsData.map(item => item.category).filter(Boolean))];
+          setCategories(cats);
+        }
+      } else {
+        toast.error(apiData.message || 'Failed to load listings');
+      }
+    } catch (error) {
+      console.error('Error fetching listings:', error);
+      toast.error('Failed to load listings');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchListings();
+  }, [searchTerm, categoryFilter]);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    fetchListings(1);
+  };
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= pagination.totalPages) {
+      fetchListings(newPage);
+    }
+  };
+
+  if (loading && listings.length === 0) {
     return (
-      <div className="border rounded-lg p-4 text-center text-gray-500">
-        No listing data available
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="border rounded-lg overflow-hidden shadow hover:shadow-lg transition-shadow duration-300 bg-white">
-      {/* Image - using 'imageUrl' from your API */}
-      <div className="h-48 bg-gray-100 flex items-center justify-center">
-        {listing.imageUrl ? (
-          <img 
-            src={listing.imageUrl} 
-            alt={listing.title || 'Listing'}
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              e.target.onerror = null;
-              e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect width="200" height="200" fill="%23f0f0f0"/%3E%3Ctext x="50" y="110" font-family="Arial" font-size="16" fill="%23999"%3ENo Image%3C/text%3E%3C/svg%3E';
-            }}
+    <div>
+      <h1 className="text-3xl font-bold mb-6">🛍️ Browse Listings</h1>
+      
+      {/* Search and Filter */}
+      <div className="flex flex-col md:flex-row gap-4 mb-6">
+        <form onSubmit={handleSearch} className="flex-1 flex gap-2">
+          <input
+            type="text"
+            placeholder="Search products..."
+            className="flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
-        ) : (
-          <span className="text-gray-400">No Image</span>
-        )}
+          <button
+            type="submit"
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Search
+          </button>
+        </form>
+        <select
+          className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white md:w-48"
+          value={categoryFilter}
+          onChange={(e) => setCategoryFilter(e.target.value)}
+        >
+          {categories.map(cat => (
+            <option key={cat} value={cat}>
+              {cat.charAt(0).toUpperCase() + cat.slice(1)}
+            </option>
+          ))}
+        </select>
       </div>
 
-      {/* Details */}
-      <div className="p-4">
-        {/* Title - using 'title' from your API */}
-        <h3 className="font-semibold text-lg truncate">
-          {listing.title || 'Unnamed'}
-        </h3>
-
-        {/* Description */}
-        <p className="text-gray-600 text-sm line-clamp-2 min-h-[40px]">
-          {listing.description || 'No description available'}
-        </p>
-
-        {/* Price and Status */}
-        <div className="flex items-center justify-between mt-2">
-          <span className="text-blue-600 font-bold text-xl">
-            ${parseFloat(listing.price).toFixed(2)}
-          </span>
-          
-          {/* Status - 'active' from your API */}
-          <span className={`text-xs px-2 py-1 rounded ${
-            listing.status === 'active' 
-              ? 'bg-green-100 text-green-800' 
-              : 'bg-gray-100 text-gray-800'
-          }`}>
-            {listing.status || 'Unknown'}
-          </span>
-        </div>
-
-        {/* Category */}
-        {listing.category && (
-          <span className="text-sm text-gray-500 inline-block mt-1">
-            {listing.category}
-          </span>
-        )}
-
-        {/* Stock */}
-        {listing.stock !== undefined && (
-          <p className="text-sm text-gray-500 mt-1">
-            Stock: {listing.stock} available
-          </p>
-        )}
-
-        {/* ⚠️ CRITICAL FIX: Seller info - accessing seller.name, NOT the seller object */}
-        {listing.seller && typeof listing.seller === 'object' && (
-          <div className="mt-3 pt-3 border-t border-gray-100">
-            <p className="text-sm text-gray-600">
-              <span className="font-medium">Seller:</span>{' '}
-              {listing.seller.name || listing.seller.email || 'Unknown'}
-            </p>
+      {/* Listings Grid */}
+      {listings.length > 0 ? (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {listings.map((listing) => (
+              <ListingCard key={listing.id} listing={listing} />
+            ))}
           </div>
-        )}
-        {/* ❌ NEVER DO: {listing.seller} - this causes the error! */}
-
-        {/* Created At */}
-        {listing.createdAt && (
-          <p className="text-xs text-gray-400 mt-1">
-            Posted: {new Date(listing.createdAt).toLocaleDateString()}
-          </p>
-        )}
-      </div>
+          
+          {/* Pagination */}
+          {pagination.totalPages > 1 && (
+            <div className="flex justify-center gap-2 mt-8">
+              <button
+                onClick={() => handlePageChange(pagination.page - 1)}
+                disabled={pagination.page === 1}
+                className="px-4 py-2 border rounded disabled:opacity-50 hover:bg-gray-100 transition-colors"
+              >
+                Previous
+              </button>
+              <span className="px-4 py-2">
+                Page {pagination.page} of {pagination.totalPages}
+              </span>
+              <button
+                onClick={() => handlePageChange(pagination.page + 1)}
+                disabled={pagination.page === pagination.totalPages}
+                className="px-4 py-2 border rounded disabled:opacity-50 hover:bg-gray-100 transition-colors"
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </>
+      ) : (
+        <div className="text-center py-12">
+          <p className="text-gray-500 text-lg">No listings found matching your criteria.</p>
+          <p className="text-gray-400 text-sm mt-2">Try adjusting your search or filters.</p>
+        </div>
+      )}
     </div>
   );
 };
 
-export default ListingCard;
+export default Listings;

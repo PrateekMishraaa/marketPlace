@@ -1,3 +1,4 @@
+// src/pages/ListingDetail.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -21,10 +22,15 @@ const ListingDetail = () => {
         setLoading(true);
         const response = await apiService.listings.getById(id);
         
-        // ✅ CORRECT: Access the nested data structure
-        const listingData = response.data.data || response.data;
-        setListing(listingData);
+        // ✅ Correctly access the nested data
+        const apiData = response.data;
         
+        if (apiData.success) {
+          setListing(apiData.data);
+        } else {
+          toast.error(apiData.message || 'Listing not found');
+          navigate('/listings');
+        }
       } catch (error) {
         console.error('Error fetching listing:', error);
         toast.error('Listing not found');
@@ -37,7 +43,7 @@ const ListingDetail = () => {
     fetchListing();
   }, [id, navigate]);
 
-  // ✅ Place order using backend API
+  // ✅ Place order
   const handlePlaceOrder = async () => {
     if (!user) {
       toast.error('Please login first');
@@ -83,7 +89,7 @@ const ListingDetail = () => {
   return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6">
-        {/* Image - using 'imageUrl' from API */}
+        {/* Image */}
         <div className="flex justify-center items-center">
           <img
             src={listing.imageUrl || 'https://via.placeholder.com/400x400?text=No+Image'}
@@ -98,16 +104,14 @@ const ListingDetail = () => {
         {/* Details */}
         <div className="flex flex-col justify-between">
           <div>
-            {/* Title */}
             <h1 className="text-3xl font-bold mb-2">{listing.title}</h1>
             
-            {/* Category, Seller, Stock */}
             <div className="flex flex-wrap items-center gap-4 mb-4">
               <span className="text-sm bg-gray-100 px-3 py-1 rounded-full">
                 {listing.category || 'Uncategorized'}
               </span>
               
-              {/* ✅ FIXED: Access seller.name, not the seller object */}
+              {/* ✅ Access seller.name, not the seller object */}
               <span className="text-sm text-gray-500">
                 by {listing.seller?.name || 'Unknown Seller'}
               </span>
@@ -116,7 +120,6 @@ const ListingDetail = () => {
                 Stock: {listing.stock || 0}
               </span>
               
-              {/* Status Badge */}
               <span className={`text-xs px-2 py-1 rounded ${
                 listing.status === 'active' 
                   ? 'bg-green-100 text-green-800' 
@@ -126,17 +129,12 @@ const ListingDetail = () => {
               </span>
             </div>
             
-            {/* Description */}
             <p className="text-gray-700 text-lg mb-4">{listing.description}</p>
             
-            {/* Price */}
             <div className="text-4xl font-bold text-blue-600 mb-4">
-              ${typeof listing.price === 'string' 
-                ? parseFloat(listing.price).toFixed(2) 
-                : listing.price?.toFixed(2) || '0.00'}
+              ${listing.price ? parseFloat(listing.price).toFixed(2) : '0.00'}
             </div>
             
-            {/* Created At */}
             <div className="text-sm text-gray-400">
               Listed on: {listing.createdAt 
                 ? new Date(listing.createdAt).toLocaleDateString() 
@@ -170,7 +168,6 @@ const ListingDetail = () => {
               </span>
             </div>
 
-            {/* Place Order Button */}
             <button
               onClick={handlePlaceOrder}
               disabled={placingOrder || listing.stock === 0}
@@ -183,7 +180,6 @@ const ListingDetail = () => {
                   : '🛒 Place Order'}
             </button>
             
-            {/* Back Button */}
             <button
               onClick={() => navigate('/listings')}
               className="w-full bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 transition-colors"
