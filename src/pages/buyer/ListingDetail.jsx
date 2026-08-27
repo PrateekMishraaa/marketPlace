@@ -20,7 +20,11 @@ const ListingDetail = () => {
       try {
         setLoading(true);
         const response = await apiService.listings.getById(id);
-        setListing(response.data.data);
+        
+        // ✅ CORRECT: Access the nested data structure
+        const listingData = response.data.data || response.data;
+        setListing(listingData);
+        
       } catch (error) {
         console.error('Error fetching listing:', error);
         toast.error('Listing not found');
@@ -79,7 +83,7 @@ const ListingDetail = () => {
   return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6">
-        {/* Image */}
+        {/* Image - using 'imageUrl' from API */}
         <div className="flex justify-center items-center">
           <img
             src={listing.imageUrl || 'https://via.placeholder.com/400x400?text=No+Image'}
@@ -94,15 +98,50 @@ const ListingDetail = () => {
         {/* Details */}
         <div className="flex flex-col justify-between">
           <div>
+            {/* Title */}
             <h1 className="text-3xl font-bold mb-2">{listing.title}</h1>
-            <div className="flex items-center gap-4 mb-4">
-              <span className="text-sm bg-gray-100 px-3 py-1 rounded-full">{listing.category}</span>
-              <span className="text-sm text-gray-500">by {listing.seller?.name || 'Unknown'}</span>
-              <span className="text-sm text-gray-500">Stock: {listing.stock}</span>
+            
+            {/* Category, Seller, Stock */}
+            <div className="flex flex-wrap items-center gap-4 mb-4">
+              <span className="text-sm bg-gray-100 px-3 py-1 rounded-full">
+                {listing.category || 'Uncategorized'}
+              </span>
+              
+              {/* ✅ FIXED: Access seller.name, not the seller object */}
+              <span className="text-sm text-gray-500">
+                by {listing.seller?.name || 'Unknown Seller'}
+              </span>
+              
+              <span className="text-sm text-gray-500">
+                Stock: {listing.stock || 0}
+              </span>
+              
+              {/* Status Badge */}
+              <span className={`text-xs px-2 py-1 rounded ${
+                listing.status === 'active' 
+                  ? 'bg-green-100 text-green-800' 
+                  : 'bg-gray-100 text-gray-800'
+              }`}>
+                {listing.status || 'Unknown'}
+              </span>
             </div>
+            
+            {/* Description */}
             <p className="text-gray-700 text-lg mb-4">{listing.description}</p>
-            <div className="text-4xl font-bold text-blue-600 mb-4">${listing.price}</div>
-            <div className="text-sm text-gray-400">Listed on: {new Date(listing.createdAt).toLocaleDateString()}</div>
+            
+            {/* Price */}
+            <div className="text-4xl font-bold text-blue-600 mb-4">
+              ${typeof listing.price === 'string' 
+                ? parseFloat(listing.price).toFixed(2) 
+                : listing.price?.toFixed(2) || '0.00'}
+            </div>
+            
+            {/* Created At */}
+            <div className="text-sm text-gray-400">
+              Listed on: {listing.createdAt 
+                ? new Date(listing.createdAt).toLocaleDateString() 
+                : 'Unknown date'}
+            </div>
           </div>
 
           <div className="mt-6 space-y-3">
@@ -119,23 +158,32 @@ const ListingDetail = () => {
                 </button>
                 <span className="px-4 py-1 min-w-[40px] text-center">{quantity}</span>
                 <button
-                  onClick={() => setQuantity(Math.min(listing.stock, quantity + 1))}
+                  onClick={() => setQuantity(Math.min(listing.stock || 0, quantity + 1))}
                   className="px-3 py-1 hover:bg-gray-100"
-                  disabled={placingOrder || quantity >= listing.stock}
+                  disabled={placingOrder || quantity >= (listing.stock || 0)}
                 >
                   +
                 </button>
               </div>
-              <span className="text-sm text-gray-500">Available: {listing.stock}</span>
+              <span className="text-sm text-gray-500">
+                Available: {listing.stock || 0}
+              </span>
             </div>
 
+            {/* Place Order Button */}
             <button
               onClick={handlePlaceOrder}
               disabled={placingOrder || listing.stock === 0}
               className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {placingOrder ? 'Placing Order...' : listing.stock === 0 ? 'Out of Stock' : '🛒 Place Order'}
+              {placingOrder 
+                ? 'Placing Order...' 
+                : listing.stock === 0 
+                  ? 'Out of Stock' 
+                  : '🛒 Place Order'}
             </button>
+            
+            {/* Back Button */}
             <button
               onClick={() => navigate('/listings')}
               className="w-full bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 transition-colors"
