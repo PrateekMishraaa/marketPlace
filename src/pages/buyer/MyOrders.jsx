@@ -1,62 +1,76 @@
-import React, { useState } from 'react';
-import StatusBadge from '../../components/common/StatusBadge.jsx';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
+import { apiService } from '../../api/axiosConfig';
+import StatusBadge from '../../components/common/StatusBadge';
 import toast from 'react-hot-toast';
 
 const MyOrders = () => {
-  // Dummy data - Baad mein API se aayega
-  const [orders, setOrders] = useState([
-    {
-      id: 101,
-      product: 'MacBook Pro 14"',
-      price: 1299,
-      seller: 'Apple Store',
-      status: 'pending',
-      placedAt: '2024-02-15 10:30 AM',
-      image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=100&h=100&fit=crop',
-    },
-    {
-      id: 102,
-      product: 'iPhone 15 Pro Max',
-      price: 1199,
-      seller: 'Tech Hub',
-      status: 'approved',
-      placedAt: '2024-02-14 02:15 PM',
-      image: 'https://images.unsplash.com/photo-1696446701796-da61225697cc?w=100&h=100&fit=crop',
-    },
-    {
-      id: 103,
-      product: 'Samsung 65" QLED TV',
-      price: 899,
-      seller: 'Samsung Official',
-      status: 'completed',
-      placedAt: '2024-02-12 09:00 AM',
-      image: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=100&h=100&fit=crop',
-    },
-    {
-      id: 104,
-      product: 'Sony WH-1000XM5',
-      price: 399,
-      seller: 'Audio World',
-      status: 'rejected',
-      placedAt: '2024-02-10 05:45 PM',
-      image: 'https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?w=100&h=100&fit=crop',
-    },
-  ]);
+  const { user } = useAuth();
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState('all');
 
-  const handleMarkComplete = (orderId) => {
-    setOrders((prev) =>
-      prev.map((order) =>
-        order.id === orderId && order.status === 'approved'
-          ? { ...order, status: 'completed' }
-          : order
-      )
-    );
-    toast.success('🎉 Order marked as completed!');
+  // ✅ Fetch orders from backend
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+      const params = statusFilter !== 'all' ? { status: statusFilter } : {};
+      const response = await apiService.orders.getMyOrders(params);
+      setOrders(response.data.data.orders || []);
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+      toast.error('Failed to load orders');
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    if (user) {
+      fetchOrders();
+    }
+  }, [statusFilter, user]);
+
+  // ✅ Mark order as completed
+  const handleMarkComplete = async (orderId) => {
+    try {
+      await apiService.orders.markComplete(orderId);
+      toast.success('🎉 Order marked as completed!');
+      fetchOrders(); // Refresh list
+    } catch (error) {
+      console.error('Error completing order:', error);
+      toast.error(error.response?.data?.message || 'Failed to complete order');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div>
       <h1 className="text-3xl font-bold mb-6">📦 My Orders</h1>
+      
+      {/* Status Filter */}
+      <div className="flex flex-wrap gap-2 mb-6">
+        {['all', 'pending', 'approved', 'rejected', 'completed'].map((status) => (
+          <button
+            key={status}
+            onClick={() => setStatusFilter(status)}
+            className={`px-4 py-2 rounded-full transition ${
+              statusFilter === status
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            {status.charAt(0).toUpperCase() + status.slice(1)}
+          </button>
+        ))}
+      </div>
       
       {orders.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-lg shadow">
@@ -75,21 +89,25 @@ const MyOrders = () => {
               <div className="flex items-center gap-4">
                 {/* Image */}
                 <img
-                  src={order.image}
-                  alt={order.product}
+                  src={order.listing?.imageUrl || 'https://via.placeholder.com/80x80?text=No+Image'}
+                  alt={order.listing?.title}
                   className="w-20 h-20 object-cover rounded-lg"
+                  onError={(e) => {
+                    e.target.src = 'https://via.placeholder.com/80x80?text=No+Image';
+                  }}
                 />
                 
                 {/* Details */}
                 <div className="flex-1">
                   <div className="flex flex-wrap justify-between items-start">
                     <div>
-                      <h3 className="font-semibold text-lg">{order.product}</h3>
-                      <p className="text-sm text-gray-600">Seller: {order.seller}</p>
-                      <p className="text-sm text-gray-500">Placed: {order.placedAt}</p>
+                      <h3 className="font-semibold text-lg">{order.listing?.title}</h3>
+                      <p className="text-sm text-gray-600">Seller: {order.listing?.seller?.name || 'Unknown'}</p>
+                      <p className="text-sm text-gray-500">Placed: {new Date(order.createdAt).toLocaleString()}</p>
+                      <p className="text-sm text-gray-500">Quantity: {order.quantity}</p>
                     </div>
                     <div className="text-right">
-                      <div className="text-xl font-bold text-blue-600">${order.price}</div>
+                      <div className="text-xl font-bold text-blue-600">${order.totalPrice}</div>
                       <StatusBadge status={order.status} />
                     </div>
                   </div>

@@ -1,163 +1,234 @@
-// src/App.jsx
-import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import React, { lazy, Suspense } from 'react';
+import { Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import Navbar from './components/common/Navbar.jsx';
-import Footer from './components/common/Footer.jsx';
-import PrivateRoute from './components/common/PrivateRoute.jsx';
+import Navbar from './components/common/Navbar';
+import Footer from './components/common/Footer';
+import PrivateRoute from './components/common/PrivateRoute';
+import ScrollToTop from './components/common/ScrollToTop';
+import LoadingSpinner from './components/common/LoadingSpinner';
 
-// Homepage
-import Homepage from './pages/home/Homepage.jsx';
-
-// Solutions Pages
-import Advertisers from './pages/solutions/Advertisers.jsx';
-import Brands from './pages/solutions/Brands.jsx';
-import Agencies from './pages/solutions/Agencies.jsx';
-
-// Services Pages
-import DigitalPR from './pages/services/DigitalPR.jsx';
-import EmailMarketing from './pages/services/EmailMarketing.jsx';
-import SEO from './pages/services/SEO.jsx';
-import CRO from './pages/services/CRO.jsx';
+// ==================== LAZY LOADED COMPONENTS ====================
 
 // Public Pages
-import Blog from './pages/Home/Blog.jsx';
-import FAQ from './pages/Home/FAQ.jsx';
-import Contact from './pages/Home/Contact.jsx';
-import PodCast from './pages/Home/Podcast.jsx';
+const Homepage = lazy(() => import('./pages/home/Homepage'));
+const Services = lazy(() => import('./pages/Home/Services'));
+const Blog = lazy(() => import('./pages/Home/Blog'));
+const FAQ = lazy(() => import('./pages/Home/FAQ'));
+const Contact = lazy(() => import('./pages/Home/Contact'));
+const Podcast = lazy(() => import('./pages/Home/Podcast'));
 
 // Auth Pages
-import Login from './pages/auth/Login.jsx';
-import Register from './pages/auth/Register.jsx';
+const Login = lazy(() => import('./pages/auth/Login'));
+const Register = lazy(() => import('./pages/auth/Register'));
+
+// Profile Page
+const Profile = lazy(() => import('./pages/profile/Profile'));
 
 // Buyer Pages
-import Listings from './pages/buyer/Listings.jsx';
-import ListingDetail from './pages/buyer/ListingDetail.jsx';
-import MyOrders from './pages/buyer/MyOrders.jsx';
+const Listings = lazy(() => import('./pages/buyer/Listings'));
+const ListingDetail = lazy(() => import('./pages/buyer/ListingDetail'));
+const MyOrders = lazy(() => import('./pages/buyer/MyOrders'));
 
 // Seller Pages
-import MyListings from './pages/seller/MyListings.jsx';
-import CreateListing from './pages/seller/CreateListing.jsx';
-import EditListing from './pages/seller/EditListing.jsx';
-import SellerOrders from './pages/seller/SellerOrders.jsx';
+const MyListings = lazy(() => import('./pages/seller/MyListings'));
+const CreateListing = lazy(() => import('./pages/seller/CreateListing'));
+const EditListing = lazy(() => import('./pages/seller/EditListing'));
+const SellerOrders = lazy(() => import('./pages/seller/SellerOrders'));
 
 // Admin Pages
-import AdminDashboard from './pages/admin/AdminDashboard.jsx';
-import AdminOrders from './pages/admin/AdminOrders.jsx';
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
+const AdminOrders = lazy(() => import('./pages/admin/AdminOrders'));
+const AdminUsers = lazy(() => import('./pages/admin/AdminUsers'));
+
+// Solutions Pages
+const Solutions = lazy(() => import('./pages/Solutions'));
+
+// ==================== MAIN APP COMPONENT ====================
 
 const App = () => {
   return (
-    <>
+    <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar />
-      <div className="min-h-screen">
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<Homepage />} />
-          
-          {/* Solutions */}
-          <Route path="/solutions/advertisers" element={<Advertisers />} />
-          <Route path="/solutions/brands" element={<Brands />} />
-          <Route path="/solutions/agencies" element={<Agencies />} />
-          
-          {/* Services */}
-          <Route path="/services/digital-pr" element={<DigitalPR />} />
-          <Route path="/services/email-marketing" element={<EmailMarketing />} />
-          <Route path="/services/seo" element={<SEO />} />
-          <Route path="/services/cro" element={<CRO />} />
-          
-          {/* Other Public Pages */}
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/podcasts" element={<PodCast />} />
-          <Route path="/faq" element={<FAQ />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+      <ScrollToTop />
+      
+      <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <Suspense fallback={<LoadingSpinner />}>
+          <Routes>
+            {/* ==================== PUBLIC ROUTES ==================== */}
+            <Route path="/" element={<Homepage />} />
+            <Route path="/services" element={<Services />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/faq" element={<FAQ />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/podcasts" element={<Podcast />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
 
-          {/* Buyer Routes */}
-          <Route
-            path="/listings"
-            element={
-              <PrivateRoute allowedRoles={['buyer']}>
-                <Listings />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/listings/:id"
-            element={
-              <PrivateRoute allowedRoles={['buyer']}>
-                <ListingDetail />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/my-orders"
-            element={
-              <PrivateRoute allowedRoles={['buyer']}>
-                <MyOrders />
-              </PrivateRoute>
-            }
-          />
+            {/* ==================== SOLUTIONS ROUTES ==================== */}
+            <Route path="/solutions/advertisers" element={<Solutions />} />
+            <Route path="/solutions/brands" element={<Solutions />} />
+            <Route path="/solutions/agencies" element={<Solutions />} />
 
-          {/* Seller Routes */}
-          <Route
-            path="/seller/listings"
-            element={
-              <PrivateRoute allowedRoles={['seller']}>
-                <MyListings />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/seller/listings/new"
-            element={
-              <PrivateRoute allowedRoles={['seller']}>
-                <CreateListing />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/seller/listings/edit/:id"
-            element={
-              <PrivateRoute allowedRoles={['seller']}>
-                <EditListing />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/seller/orders"
-            element={
-              <PrivateRoute allowedRoles={['seller']}>
-                <SellerOrders />
-              </PrivateRoute>
-            }
-          />
+            {/* ==================== SERVICES SUB-ROUTES ==================== */}
+            <Route path="/services/digital-pr" element={<Services />} />
+            <Route path="/services/email-marketing" element={<Services />} />
+            <Route path="/services/seo" element={<Services />} />
+            <Route path="/services/cro" element={<Services />} />
 
-          {/* Admin Routes */}
-          <Route
-            path="/admin/dashboard"
-            element={
-              <PrivateRoute allowedRoles={['admin']}>
-                <AdminDashboard />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/admin/orders"
-            element={
-              <PrivateRoute allowedRoles={['admin']}>
-                <AdminOrders />
-              </PrivateRoute>
-            }
-          />
+            {/* ==================== PROFILE ROUTE ==================== */}
+            <Route
+              path="/profile"
+              element={
+                <PrivateRoute allowedRoles={['buyer', 'seller', 'admin']}>
+                  <Profile />
+                </PrivateRoute>
+              }
+            />
 
-          {/* 404 */}
-          <Route path="*" element={<div className="text-center py-20 text-2xl">404 - Page Not Found</div>} />
-        </Routes>
-      </div>
+            {/* ==================== BUYER ROUTES ==================== */}
+            <Route
+              path="/listings"
+              element={
+                <PrivateRoute allowedRoles={['buyer', 'admin']}>
+                  <Listings />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/listings/:id"
+              element={
+                <PrivateRoute allowedRoles={['buyer']}>
+                  <ListingDetail />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/my-orders"
+              element={
+                <PrivateRoute allowedRoles={['buyer']}>
+                  <MyOrders />
+                </PrivateRoute>
+              }
+            />
+
+            {/* ==================== SELLER ROUTES ==================== */}
+            <Route
+              path="/seller/listings"
+              element={
+                <PrivateRoute allowedRoles={['seller', 'admin']}>
+                  <MyListings />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/seller/listings/new"
+              element={
+                <PrivateRoute allowedRoles={['seller', 'admin']}>
+                  <CreateListing />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/seller/listings/edit/:id"
+              element={
+                <PrivateRoute allowedRoles={['seller', 'admin']}>
+                  <EditListing />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/seller/orders"
+              element={
+                <PrivateRoute allowedRoles={['seller', 'admin']}>
+                  <SellerOrders />
+                </PrivateRoute>
+              }
+            />
+
+            {/* ==================== ADMIN ROUTES ==================== */}
+            <Route
+              path="/admin/dashboard"
+              element={
+                <PrivateRoute allowedRoles={['admin']}>
+                  <AdminDashboard />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/admin/orders"
+              element={
+                <PrivateRoute allowedRoles={['admin']}>
+                  <AdminOrders />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/admin/users"
+              element={
+                <PrivateRoute allowedRoles={['admin']}>
+                  <AdminUsers />
+                </PrivateRoute>
+              }
+            />
+
+            {/* ==================== 404 PAGE ==================== */}
+            <Route
+              path="*"
+              element={
+                <div className="flex flex-col items-center justify-center min-h-[60vh] text-center text-gray-700">
+                  <div className="text-9xl font-bold text-blue-600 mb-4">404</div>
+                  <h1 className="text-4xl font-bold mb-2">Page Not Found</h1>
+                  <p className="text-lg text-gray-500 mb-6">
+                    Oops! The page you are looking for does not exist.
+                  </p>
+                  <a
+                    href="/"
+                    className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:shadow-xl transition-all duration-300"
+                  >
+                    Go Back Home
+                  </a>
+                </div>
+              }
+            />
+          </Routes>
+        </Suspense>
+      </main>
+
       <Footer />
-      <Toaster position="top-right" reverseOrder={false} />
-    </>
+      
+      {/* ==================== TOAST NOTIFICATIONS ==================== */}
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#ffffff',
+            color: '#1a202c',
+            border: '1px solid #e2e8f0',
+            borderRadius: '12px',
+            boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+          },
+          success: {
+            icon: '✅',
+            style: {
+              borderLeft: '4px solid #22c55e',
+            },
+          },
+          error: {
+            icon: '❌',
+            style: {
+              borderLeft: '4px solid #ef4444',
+            },
+          },
+          loading: {
+            icon: '⏳',
+            style: {
+              borderLeft: '4px solid #3b82f6',
+            },
+          },
+        }}
+      />
+    </div>
   );
 };
 

@@ -75,7 +75,7 @@ const Services = () => {
         {/* CTA */}
         <div className="text-center mt-12">
           <Link
-            to="/services"
+            to="/services/digital-pr"
             className="inline-flex items-center gap-2 px-8 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
           >
             View All Services 

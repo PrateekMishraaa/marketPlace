@@ -1,83 +1,69 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { apiService } from '../../api/axiosConfig';
 import toast from 'react-hot-toast';
-import { useAuth } from '../../context/AuthContext.jsx';
 
 const ListingDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   
-  // Dummy data - Baad mein API se aayega
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [quantity, setQuantity] = useState(1);
+  const [placingOrder, setPlacingOrder] = useState(false);
 
+  // ✅ Fetch listing from backend
   useEffect(() => {
-    // Simulate API call
-    const dummyListings = {
-      1: {
-        id: 1,
-        title: 'MacBook Pro 14"',
-        price: 1299,
-        description: 'Apple M2 Pro chip with 12-core CPU, 16-core GPU, 16GB RAM, 512GB SSD. 14.2-inch Liquid Retina XDR display. Up to 18 hours battery life.',
-        image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=600&h=400&fit=crop',
-        seller: 'Apple Store',
-        sellerId: 2,
-        category: 'Electronics',
-        stock: 5,
-        createdAt: '2024-01-15',
-      },
-      2: {
-        id: 2,
-        title: 'iPhone 15 Pro Max',
-        price: 1199,
-        description: '6.7-inch Super Retina XDR display, 256GB storage, Titanium body, A17 Pro chip, 48MP main camera with 5x optical zoom.',
-        image: 'https://images.unsplash.com/photo-1696446701796-da61225697cc?w=600&h=400&fit=crop',
-        seller: 'Tech Hub',
-        sellerId: 3,
-        category: 'Electronics',
-        stock: 3,
-        createdAt: '2024-02-01',
-      },
-      3: {
-        id: 3,
-        title: 'Samsung 65" QLED TV',
-        price: 899,
-        description: '65-inch 4K QLED TV with Quantum HDR, 100% Color Volume, Object Tracking Sound, and Smart TV features.',
-        image: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=600&h=400&fit=crop',
-        seller: 'Samsung Official',
-        sellerId: 4,
-        category: 'Electronics',
-        stock: 8,
-        createdAt: '2024-01-20',
-      },
-    };
-
-    setTimeout(() => {
-      const found = dummyListings[id];
-      if (found) {
-        setListing(found);
-      } else {
+    const fetchListing = async () => {
+      try {
+        setLoading(true);
+        const response = await apiService.listings.getById(id);
+        setListing(response.data.data);
+      } catch (error) {
+        console.error('Error fetching listing:', error);
         toast.error('Listing not found');
         navigate('/listings');
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
-    }, 500);
+    };
+    
+    fetchListing();
   }, [id, navigate]);
 
-  const handlePlaceOrder = () => {
+  // ✅ Place order using backend API
+  const handlePlaceOrder = async () => {
     if (!user) {
       toast.error('Please login first');
       navigate('/login');
       return;
     }
 
-    // Simulate placing order
-    toast.success(`✅ Order placed successfully for ${listing.title}!`);
-    toast('Order status: Pending (Waiting for admin approval)', { icon: '⏳' });
-    
-    // Navigate to My Orders
-    setTimeout(() => navigate('/my-orders'), 1500);
+    if (user.role === 'seller') {
+      toast.error('Sellers cannot purchase listings');
+      return;
+    }
+
+    try {
+      setPlacingOrder(true);
+      const response = await apiService.orders.create({
+        listingId: parseInt(id),
+        quantity,
+        shippingAddress: 'Default Address - Update in profile',
+      });
+      
+      toast.success(`✅ Order placed successfully for ${listing.title}!`);
+      toast('Order status: Pending (Waiting for admin approval)', { icon: '⏳' });
+      
+      navigate('/my-orders');
+    } catch (error) {
+      console.error('Error placing order:', error);
+      toast.error(error.response?.data?.message || 'Failed to place order');
+    } finally {
+      setPlacingOrder(false);
+    }
   };
 
   if (loading) {
@@ -96,9 +82,12 @@ const ListingDetail = () => {
         {/* Image */}
         <div className="flex justify-center items-center">
           <img
-            src={listing.image}
+            src={listing.imageUrl || 'https://via.placeholder.com/400x400?text=No+Image'}
             alt={listing.title}
             className="w-full max-h-96 object-cover rounded-lg"
+            onError={(e) => {
+              e.target.src = 'https://via.placeholder.com/400x400?text=No+Image';
+            }}
           />
         </div>
 
@@ -108,20 +97,44 @@ const ListingDetail = () => {
             <h1 className="text-3xl font-bold mb-2">{listing.title}</h1>
             <div className="flex items-center gap-4 mb-4">
               <span className="text-sm bg-gray-100 px-3 py-1 rounded-full">{listing.category}</span>
-              <span className="text-sm text-gray-500">by {listing.seller}</span>
+              <span className="text-sm text-gray-500">by {listing.seller?.name || 'Unknown'}</span>
               <span className="text-sm text-gray-500">Stock: {listing.stock}</span>
             </div>
             <p className="text-gray-700 text-lg mb-4">{listing.description}</p>
             <div className="text-4xl font-bold text-blue-600 mb-4">${listing.price}</div>
-            <div className="text-sm text-gray-400">Listed on: {listing.createdAt}</div>
+            <div className="text-sm text-gray-400">Listed on: {new Date(listing.createdAt).toLocaleDateString()}</div>
           </div>
 
           <div className="mt-6 space-y-3">
+            {/* Quantity Selector */}
+            <div className="flex items-center gap-4">
+              <label className="font-medium">Quantity:</label>
+              <div className="flex items-center border rounded-lg">
+                <button
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  className="px-3 py-1 hover:bg-gray-100"
+                  disabled={placingOrder}
+                >
+                  -
+                </button>
+                <span className="px-4 py-1 min-w-[40px] text-center">{quantity}</span>
+                <button
+                  onClick={() => setQuantity(Math.min(listing.stock, quantity + 1))}
+                  className="px-3 py-1 hover:bg-gray-100"
+                  disabled={placingOrder || quantity >= listing.stock}
+                >
+                  +
+                </button>
+              </div>
+              <span className="text-sm text-gray-500">Available: {listing.stock}</span>
+            </div>
+
             <button
               onClick={handlePlaceOrder}
-              className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold text-lg"
+              disabled={placingOrder || listing.stock === 0}
+              className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              🛒 Place Order
+              {placingOrder ? 'Placing Order...' : listing.stock === 0 ? 'Out of Stock' : '🛒 Place Order'}
             </button>
             <button
               onClick={() => navigate('/listings')}

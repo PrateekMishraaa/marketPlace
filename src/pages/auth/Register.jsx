@@ -1,7 +1,6 @@
-// src/pages/auth/Register.jsx
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext.jsx';
+import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
 const Register = () => {
@@ -18,13 +17,10 @@ const Register = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Validation
@@ -47,16 +43,18 @@ const Register = () => {
 
     setLoading(true);
 
-    // Simulate registration
-    setTimeout(() => {
-      register({
-        name: formData.name,
-        email: formData.email,
-        role: formData.role,
-      });
-      setLoading(false);
+    const result = await register({
+      name: formData.name,
+      email: formData.email,
+      password: formData.password,
+      role: formData.role,
+    });
+
+    if (result.success) {
       navigate('/login');
-    }, 1000);
+    }
+    
+    setLoading(false);
   };
 
   return (
@@ -70,6 +68,8 @@ const Register = () => {
           className="w-full p-2 border mb-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
           value={formData.name}
           onChange={handleChange}
+          disabled={loading}
+          required
         />
         <input
           type="email"
@@ -78,14 +78,18 @@ const Register = () => {
           className="w-full p-2 border mb-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
           value={formData.email}
           onChange={handleChange}
+          disabled={loading}
+          required
         />
         <input
           type="password"
           name="password"
-          placeholder="Password"
+          placeholder="Password (min 6 characters)"
           className="w-full p-2 border mb-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
           value={formData.password}
           onChange={handleChange}
+          disabled={loading}
+          required
         />
         <input
           type="password"
@@ -94,6 +98,8 @@ const Register = () => {
           className="w-full p-2 border mb-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
           value={formData.confirmPassword}
           onChange={handleChange}
+          disabled={loading}
+          required
         />
         
         <div className="mb-3">
@@ -105,6 +111,7 @@ const Register = () => {
             value={formData.role}
             onChange={handleChange}
             className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            disabled={loading}
           >
             <option value="buyer">Buyer</option>
             <option value="seller">Seller</option>
@@ -114,9 +121,7 @@ const Register = () => {
         <button
           type="submit"
           disabled={loading}
-          className={`w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 transition ${
-            loading ? 'opacity-50 cursor-not-allowed' : ''
-          }`}
+          className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 transition disabled:opacity-50"
         >
           {loading ? 'Creating Account...' : 'Register'}
         </button>

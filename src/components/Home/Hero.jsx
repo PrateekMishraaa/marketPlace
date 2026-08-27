@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 
 const Hero = () => {
   return (
+  <>
     <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50 pt-20 pb-32">
       {/* Background Decoration */}
       <div className="absolute top-0 right-0 -mt-20 -mr-20 w-96 h-96 bg-blue-200 rounded-full opacity-20 blur-3xl"></div>
@@ -33,7 +34,7 @@ const Hero = () => {
                 Get Started Free
               </Link>
               <Link
-                to="/services"
+                to="/services/digital-pr"
                 className="px-8 py-4 bg-white text-gray-700 rounded-lg border-2 border-gray-200 hover:border-blue-500 hover:text-blue-600 transition-all duration-300 font-semibold text-lg"
               >
                 View Services →
@@ -95,6 +96,7 @@ const Hero = () => {
         }
       `}</style>
     </section>
+  </>
   );
 };
 

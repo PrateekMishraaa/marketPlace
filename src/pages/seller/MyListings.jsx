@@ -1,55 +1,56 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { apiService } from '../../api/axiosConfig';
 import toast from 'react-hot-toast';
-import { useAuth } from '../../context/AuthContext.jsx';
 
 const MyListings = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  
-  // Dummy data - Baad mein API se aayega
-  const [listings, setListings] = useState([
-    {
-      id: 1,
-      title: 'MacBook Pro 14"',
-      price: 1299,
-      description: 'Apple M2 Pro chip, 16GB RAM',
-      category: 'Electronics',
-      image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=300&h=200&fit=crop',
-      status: 'active',
-      ordersCount: 3,
-      createdAt: '2024-02-01',
-    },
-    {
-      id: 2,
-      title: 'Wireless Earbuds Pro',
-      price: 79,
-      description: 'Noise cancelling, 24hr battery',
-      category: 'Accessories',
-      image: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=300&h=200&fit=crop',
-      status: 'active',
-      ordersCount: 7,
-      createdAt: '2024-02-05',
-    },
-    {
-      id: 3,
-      title: 'Smart Watch Series 8',
-      price: 399,
-      description: 'Health tracking, GPS, LTE',
-      category: 'Electronics',
-      image: 'https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=300&h=200&fit=crop',
-      status: 'inactive',
-      ordersCount: 1,
-      createdAt: '2024-01-28',
-    },
-  ]);
+  const [listings, setListings] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this listing?')) {
-      setListings((prev) => prev.filter(item => item.id !== id));
-      toast.success('Listing deleted successfully');
+  // ✅ Fetch seller's listings from backend
+  const fetchMyListings = async () => {
+    try {
+      setLoading(true);
+      const response = await apiService.listings.getMyListings();
+      setListings(response.data.data || []);
+    } catch (error) {
+      console.error('Error fetching listings:', error);
+      toast.error('Failed to load your listings');
+    } finally {
+      setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (user) {
+      fetchMyListings();
+    }
+  }, [user]);
+
+  // ✅ Delete listing
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this listing?')) return;
+    
+    try {
+      await apiService.listings.delete(id);
+      toast.success('Listing deleted successfully');
+      fetchMyListings();
+    } catch (error) {
+      console.error('Error deleting listing:', error);
+      toast.error(error.response?.data?.message || 'Failed to delete listing');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -78,19 +79,20 @@ const MyListings = () => {
           {listings.map((listing) => (
             <div key={listing.id} className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow">
               <div className="flex flex-col md:flex-row gap-4">
-                {/* Image */}
                 <img
-                  src={listing.image}
+                  src={listing.imageUrl || 'https://via.placeholder.com/128x128?text=No+Image'}
                   alt={listing.title}
                   className="w-32 h-32 object-cover rounded-lg"
+                  onError={(e) => {
+                    e.target.src = 'https://via.placeholder.com/128x128?text=No+Image';
+                  }}
                 />
                 
-                {/* Details */}
                 <div className="flex-1">
                   <div className="flex flex-wrap justify-between items-start">
                     <div>
                       <h3 className="font-semibold text-lg">{listing.title}</h3>
-                      <p className="text-sm text-gray-600">{listing.description}</p>
+                      <p className="text-sm text-gray-600 line-clamp-2">{listing.description}</p>
                       <div className="flex items-center gap-3 mt-1">
                         <span className="text-xs bg-gray-100 px-2 py-1 rounded">{listing.category}</span>
                         <span className={`text-xs px-2 py-1 rounded ${
@@ -100,28 +102,27 @@ const MyListings = () => {
                         }`}>
                           {listing.status}
                         </span>
-                        <span className="text-xs text-gray-500">Orders: {listing.ordersCount}</span>
+                        <span className="text-xs text-gray-500">Stock: {listing.stock}</span>
                       </div>
                     </div>
                     <div className="text-2xl font-bold text-blue-600">${listing.price}</div>
                   </div>
                   
-                  {/* Actions */}
                   <div className="flex flex-wrap gap-2 mt-3">
                     <Link
                       to={`/seller/listings/edit/${listing.id}`}
-                      className="bg-yellow-500 text-white px-4 py-1.5 rounded hover:bg-yellow-600 text-sm"
+                      className="bg-yellow-500 text-white px-4 py-1.5 rounded hover:bg-yellow-600 text-sm transition"
                     >
                       ✏️ Edit
                     </Link>
                     <button
                       onClick={() => handleDelete(listing.id)}
-                      className="bg-red-500 text-white px-4 py-1.5 rounded hover:bg-red-600 text-sm"
+                      className="bg-red-500 text-white px-4 py-1.5 rounded hover:bg-red-600 text-sm transition"
                     >
                       🗑️ Delete
                     </button>
                     <span className="text-xs text-gray-400 ml-auto self-center">
-                      Created: {listing.createdAt}
+                      Created: {new Date(listing.createdAt).toLocaleDateString()}
                     </span>
                   </div>
                 </div>

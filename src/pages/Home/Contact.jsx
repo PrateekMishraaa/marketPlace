@@ -47,7 +47,7 @@ const Contact = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold">Address</h3>
-                  <p className="text-gray-600">123 Business Street, Suite 100<br />San Francisco, CA 94105</p>
+                  <p className="text-gray-600">D/9 hari nagar part 2<br />Badarpur </p>
                 </div>
               </div>
               <div className="flex items-start gap-4">
@@ -56,8 +56,8 @@ const Contact = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold">Email</h3>
-                  <p className="text-gray-600">hello@adsy.com</p>
-                  <p className="text-gray-600">support@adsy.com</p>
+                  <p className="text-gray-600">prateek.apphivey@gmail.com</p>
+                  <p className="text-gray-600">support@markethub.com</p>
                 </div>
               </div>
               <div className="flex items-start gap-4">
@@ -66,8 +66,8 @@ const Contact = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold">Phone</h3>
-                  <p className="text-gray-600">+1 (555) 123-4567</p>
-                  <p className="text-gray-600">Mon-Fri 9am - 6pm PST</p>
+                  <p className="text-gray-600">9540802061</p>
+                  <p className="text-gray-600">Mon-Fri 9am - 6pm </p>
                 </div>
               </div>
             </div>

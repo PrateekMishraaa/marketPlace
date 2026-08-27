@@ -5,8 +5,8 @@ const FAQ = () => {
 
   const faqs = [
     {
-      question: 'What is Adsy and how does it work?',
-      answer: 'Adsy is a comprehensive digital marketing platform that connects businesses with expert marketing services. We help you grow your online presence through SEO, email marketing, PR, and conversion optimization. Simply choose your service, and our experts will handle the rest.',
+      question: 'What is MarketHub and how does it work?',
+      answer: 'MarketHub is a comprehensive digital marketing platform that connects businesses with expert marketing services. We help you grow your online presence through SEO, email marketing, PR, and conversion optimization. Simply choose your service, and our experts will handle the rest.',
     },
     {
       question: 'How long does it take to see results?',
@@ -17,15 +17,15 @@ const FAQ = () => {
       answer: 'Yes, you can cancel your subscription at any time. There are no long-term contracts or hidden fees. We offer monthly subscriptions with the flexibility to cancel or pause as needed.',
     },
     {
-      question: 'What makes Adsy different from other marketing platforms?',
-      answer: 'Adsy combines expert human expertise with data-driven technology. We assign dedicated specialists to your account, provide personalized strategies, and offer real-time reporting. Our focus is on delivering measurable ROI for your business.',
+      question: 'What makes MarketHub different from other marketing platforms?',
+      answer: 'MarketHub combines expert human expertise with data-driven technology. We assign dedicated specialists to your account, provide personalized strategies, and offer real-time reporting. Our focus is on delivering measurable ROI for your business.',
     },
     {
       question: 'Do you work with all types of businesses?',
       answer: 'Yes, we work with businesses of all sizes - from startups to enterprises. Our services are tailored to meet the unique needs of each client, whether you\'re a B2B, B2C, or e-commerce business.',
     },
     {
-      question: 'How do I get started with Adsy?',
+      question: 'How do I get started with MarketHub?',
       answer: 'Getting started is simple! Sign up for a free account, choose your service package, and our team will contact you within 24 hours to create a custom strategy for your business. You can also schedule a free consultation.',
     },
   ];
@@ -84,7 +84,7 @@ const FAQ = () => {
               Can't find what you're looking for? Contact our support team.
             </p>
             <a
-              href="mailto:support@adsy.com"
+              href="mailto:support@markethub.com"
               className="inline-block px-6 py-3 bg-white text-blue-600 rounded-lg hover:shadow-xl transition-all font-semibold"
             >
               Contact Support
