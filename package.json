@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "npm install --legacy-peer-deps && next build",
+    "vercel-build": "npm install --legacy-peer-deps && npm run build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -23,7 +24,7 @@
     "react-hot-toast": "^2.6.0",
     "react-i18next": "^17.0.12",
     "react-icons": "^5.7.0",
-    "react-intersection-observer": "^9.5.3",
+    "react-intersection-observer": "^9.5.0-beta.2",
     "react-lazy-load-image-component": "^1.6.3",
     "react-router-dom": "^7.18.2",
     "tailwindcss": "^4.3.3"
