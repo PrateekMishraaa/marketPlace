@@ -2,7 +2,7 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 
 // ✅ Use your backend URL
-const BASE_URL = 'http://localhost:5000/api';
+const BASE_URL = 'https://marketplacebackend-1.onrender.com/api';
 
 // Create axios instance
 const api = axios.create({

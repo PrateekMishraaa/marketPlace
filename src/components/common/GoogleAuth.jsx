@@ -11,7 +11,7 @@ const GoogleAuth = ({ type = 'login' }) => {
   const handleGoogleSuccess = async (response) => {
     try {
       // Send token to backend
-      const result = await fetch('http://localhost:5000/api/auth/google', {
+      const result = await fetch('https://marketplacebackend-1.onrender.com/api/auth/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token: response.access_token }),
